@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 // handle errors
 const handleErrors = (err) => {
-  let errors = { email: "", password: "" };
+  let errors = { email: "", password: "", username: "" };
 
   // incorrect email
   if (err.message === "incorrect email") {
@@ -14,6 +14,12 @@ const handleErrors = (err) => {
   // incorrect password
   if (err.message === "incorrect password") {
     errors.password = "that password is incorrect";
+    return errors;
+  }
+
+  // incorrect username
+  if (err.message === "incorrect username") {
+    errors.username = "that username is not registered";
     return errors;
   }
 
@@ -48,9 +54,9 @@ module.exports.login_get = (req, res) => {
 };
 
 module.exports.signup_post = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, username } = req.body;
   try {
-    const user = await User.create({ email, password });
+    const user = await User.create({ email, password, username });
     const token = createToken(user._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000 });
     res.status(201).json({ user: user._id });
@@ -61,10 +67,10 @@ module.exports.signup_post = async (req, res) => {
 };
 
 module.exports.login_post = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   try {
-    const user = await User.login(email, password);
+    const user = await User.login(username, password);
     const token = createToken(user._id);
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000 });
     res.status(200).json({ user: user._id });
